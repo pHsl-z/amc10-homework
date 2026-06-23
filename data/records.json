@@ -1,0 +1,27 @@
+[
+  {
+    "assignment_id": 1,
+    "student_name": "viki",
+    "answers": {
+      "1": "C",
+      "2": "B"
+    },
+    "submitted_at": "2026-06-22T22:20:34.829617",
+    "results": [
+      {
+        "seq": 1,
+        "student_answer": "C",
+        "correct_answer": "E",
+        "is_correct": false
+      },
+      {
+        "seq": 2,
+        "student_answer": "B",
+        "correct_answer": "C",
+        "is_correct": false
+      }
+    ],
+    "score": 0,
+    "total": 2
+  }
+]

@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AMC10 作业 - 答题记录</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1f2937;
+    line-height: 1.7;
+}
+.header {
+    background: linear-gradient(135deg, #1e3a5f, #3182ce);
+    color: #fff;
+    padding: 20px 40px;
+}
+.header h1 { font-size: 22px; }
+.header a { color: #fff; text-decoration: none; font-size: 14px; opacity: 0.85; }
+.container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+
+.toolbar {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.toolbar select {
+    padding: 8px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+}
+
+.summary-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+.stat-item { text-align: center; }
+.stat-value { font-size: 28px; font-weight: 700; color: #3182ce; }
+.stat-label { font-size: 12px; color: #718096; }
+
+.record-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.record-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px dashed #e2e8f0;
+}
+.record-student { font-size: 16px; font-weight: 700; color: #1a365d; }
+.record-meta { font-size: 13px; color: #718096; }
+.record-score {
+    font-size: 20px;
+    font-weight: 700;
+    padding: 4px 16px;
+    border-radius: 8px;
+}
+.score-high { background: #c6f6d5; color: #276749; }
+.score-mid { background: #fefcbf; color: #975a16; }
+.score-low { background: #fed7d7; color: #9b2c2c; }
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 10px;
+}
+.detail-table th {
+    text-align: left;
+    padding: 6px 10px;
+    background: #f7fafc;
+    color: #4a5568;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+}
+.detail-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #f0f0f0;
+}
+.detail-table .correct { color: #38a169; font-weight: 600; }
+.detail-table .wrong { color: #e53e3e; font-weight: 600; }
+.detail-table .wrong-answer { background: #fff5f5; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #a0aec0;
+}
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.badge-green { background: #c6f6d5; color: #276749; }
+.badge-orange { background: #fefcbf; color: #975a16; }
+.badge-red { background: #fed7d7; color: #9b2c2c; }
+.btn {
+    padding: 8px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-secondary { background: #e2e8f0; color: #4a5568; }
+.btn-danger { background: #fed7d7; color: #9b2c2c; }
+.btn-danger:hover { background: #feb2b2; }
+</style>
+</head>
+<body>
+<div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h1>答题记录查看</h1>
+        <a href="/">← 返回主页</a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="toolbar">
+        <select id="filterAssignment" onchange="loadRecords()">
+            <option value="">全部作业</option>
+        </select>
+        <select id="filterStudent" onchange="renderRecords()">
+            <option value="">全部学生</option>
+        </select>
+    </div>
+    
+    <div class="summary-card" id="summaryCard" style="display:none;">
+        <div class="stat-item">
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-label">总提交数</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statStudents">0</div>
+            <div class="stat-label">参与学生</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statAvgScore">0%</div>
+            <div class="stat-label">平均正确率</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value" id="statWrong" style="color:#e53e3e;">0</div>
+            <div class="stat-label">总错题数</div>
+        </div>
+    </div>
+    
+    <div id="recordsList"></div>
+</div>
+
+<script>
+let allRecords = [];
+let allAssignments = [];
+let allProblems = [];
+let currentAssignmentId = '';
+
+async function init() {
+    const [recRes, assignRes, probRes] = await Promise.all([
+        fetch('/api/records'),
+        fetch('/api/assignments'),
+        fetch('/api/problems')
+    ]);
+    allRecords = await recRes.json();
+    allAssignments = await assignRes.json();
+    allProblems = await probRes.json();
+    
+    // Check URL for specific assignment
+    const params = new URLSearchParams(location.search);
+    const aid = params.get('assignment');
+    if (aid) {
+        currentAssignmentId = aid;
+    }
+    
+    // Populate assignment filter
+    const filterAssign = document.getElementById('filterAssignment');
+    filterAssign.innerHTML = '<option value="">全部作业</option>' + 
+        allAssignments.map(a => `<option value="${a.id}" ${String(a.id) === currentAssignmentId ? 'selected' : ''}>${a.title}</option>`).join('');
+    
+    loadRecords();
+}
+
+async function loadRecords() {
+    currentAssignmentId = document.getElementById('filterAssignment').value;
+    let url = '/api/records';
+    if (currentAssignmentId) url += `?assignment_id=${currentAssignmentId}`;
+    const res = await fetch(url);
+    allRecords = await res.json();
+    
+    // Populate student filter
+    const students = [...new Set(allRecords.map(r => r.student_name))].sort();
+    document.getElementById('filterStudent').innerHTML = 
+        '<option value="">全部学生</option>' + students.map(s => `<option value="${s}">${s}</option>`).join('');
+    
+    renderRecords();
+}
+
+function renderRecords() {
+    const studentFilter = document.getElementById('filterStudent').value;
+    let records = allRecords;
+    if (studentFilter) records = records.filter(r => r.student_name === studentFilter);
+    
+    // Sort by submission time (newest first)
+    records.sort((a, b) => (b.submitted_at || '').localeCompare(a.submitted_at || ''));
+    
+    // Summary
+    const summaryCard = document.getElementById('summaryCard');
+    if (records.length > 0) {
+        summaryCard.style.display = 'flex';
+        const totalScore = records.reduce((sum, r) => sum + (r.score || 0), 0);
+        const totalQuestions = records.reduce((sum, r) => sum + (r.total || 0), 0);
+        const totalWrong = records.reduce((sum, r) => sum + ((r.total || 0) - (r.score || 0)), 0);
+        const avgRate = totalQuestions > 0 ? Math.round(totalScore / totalQuestions * 100) : 0;
+        document.getElementById('statTotal').textContent = records.length;
+        document.getElementById('statStudents').textContent = new Set(records.map(r => r.student_name)).size;
+        document.getElementById('statAvgScore').textContent = avgRate + '%';
+        document.getElementById('statWrong').textContent = totalWrong;
+    } else {
+        summaryCard.style.display = 'none';
+    }
+    
+    const list = document.getElementById('recordsList');
+    if (records.length === 0) {
+        list.innerHTML = '<div class="empty-state"><h3>暂无答题记录</h3><p>学生提交作业后，记录将显示在这里</p></div>';
+        return;
+    }
+    
+    list.innerHTML = records.map(r => {
+        const score = r.score || 0;
+        const total = r.total || 0;
+        const rate = total > 0 ? Math.round(score / total * 100) : 0;
+        const scoreClass = rate >= 80 ? 'score-high' : rate >= 50 ? 'score-mid' : 'score-low';
+        const assignment = allAssignments.find(a => a.id === r.assignment_id);
+        const assignTitle = assignment ? assignment.title : '未知作业';
+        const results = r.results || [];
+        const wrongCount = results.filter(x => !x.is_correct).length;
+        
+        return `
+        <div class="record-card">
+            <div class="record-header">
+                <div>
+                    <span class="record-student">${r.student_name}</span>
+                    <span class="record-meta"> · ${assignTitle} · ${r.submitted_at ? new Date(r.submitted_at).toLocaleString('zh-CN') : ''}</span>
+                </div>
+                <div class="record-score ${scoreClass}">${score}/${total} (${rate}%)</div>
+            </div>
+            ${wrongCount > 0 ? `<div style="font-size:13px;color:#e53e3e;margin-bottom:8px;">❌ 错题 ${wrongCount} 道：</div>` : '<div style="font-size:13px;color:#38a169;margin-bottom:8px;">✓ 全部正确！</div>'}
+            ${wrongCount > 0 ? `
+            <table class="detail-table">
+                <thead>
+                    <tr><th>题号</th><th>来源</th><th>学生答案</th><th>正确答案</th><th>结果</th></tr>
+                </thead>
+                <tbody>
+                    ${results.filter(x => !x.is_correct).map(x => {
+                        const problem = allProblems.find(p => p.seq === x.seq);
+                        const source = problem ? problem.source : '';
+                        return `
+                        <tr class="wrong-answer">
+                            <td>#${x.seq}</td>
+                            <td>${source}</td>
+                            <td>${x.student_answer || '未答'}</td>
+                            <td>${x.correct_answer}</td>
+                            <td class="wrong">✗ 错误</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>` : ''}
+        </div>`;
+    }).join('');
+}
+
+init();
+</script>
+</body>
+</html>

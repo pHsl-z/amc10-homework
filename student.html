@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AMC10 作业 - 学生答题</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1f2937;
+    line-height: 1.7;
+}
+.header {
+    background: linear-gradient(135deg, #1e3a5f, #3182ce);
+    color: #fff;
+    padding: 20px 40px;
+}
+.header h1 { font-size: 22px; }
+.header a { color: #fff; text-decoration: none; font-size: 14px; opacity: 0.85; }
+.container { max-width: 900px; margin: 0 auto; padding: 30px 20px; }
+
+.welcome-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    text-align: center;
+}
+.welcome-card h2 { font-size: 22px; color: #1a365d; margin-bottom: 12px; }
+.welcome-card p { color: #718096; margin-bottom: 24px; }
+.form-group { margin-bottom: 16px; text-align: left; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+.form-group input,
+.form-group select {
+    width: 100%;
+    max-width: 400px;
+    padding: 12px 16px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 15px;
+    background: #fff;
+}
+.btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-primary { background: #3182ce; color: #fff; }
+.btn-primary:hover { background: #2c5aa0; }
+.btn-success { background: #38a169; color: #fff; }
+.btn-success:hover { background: #2f855a; }
+.btn-secondary { background: #e2e8f0; color: #4a5568; }
+
+.assignment-list { display: flex; flex-direction: column; gap: 12px; text-align: left; }
+.assignment-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: box-shadow 0.2s;
+    border-left: 4px solid #3182ce;
+}
+.assignment-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.assignment-item .title { font-weight: 700; color: #1a365d; }
+.assignment-item .meta { font-size: 13px; color: #718096; }
+
+.problem-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    border-left: 4px solid #3182ce;
+}
+.problem-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    border-bottom: 1px dashed #e2e8f0;
+    padding-bottom: 8px;
+}
+.problem-title { font-weight: 700; color: #1a365d; font-size: 16px; }
+.problem-source { font-size: 12px; color: #9ca3af; }
+.problem-en { font-size: 15px; margin-bottom: 8px; }
+.problem-zh { font-size: 13px; color: #555; margin-bottom: 12px; padding-left: 10px; border-left: 3px solid #a0aec0; }
+.options { display: flex; flex-direction: column; gap: 8px; }
+.option-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.option-item:hover { border-color: #3182ce; background: #f7fafc; }
+.option-item.selected { border-color: #3182ce; background: #ebf8ff; }
+.option-item input { width: 18px; height: 18px; cursor: pointer; }
+.option-item.correct { border-color: #38a169; background: #c6f6d5; }
+.option-item.wrong { border-color: #e53e3e; background: #fed7d7; }
+.option-item .label { font-weight: 700; color: #3182ce; min-width: 24px; }
+
+.submit-bar {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(12px);
+    padding: 16px 20px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+.progress-info { font-size: 14px; color: #4a5568; }
+.progress-info strong { color: #3182ce; }
+
+.result-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.result-score { font-size: 48px; font-weight: 700; color: #3182ce; }
+.result-total { font-size: 20px; color: #718096; }
+.result-detail { margin-top: 20px; text-align: left; }
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+.result-row .correct { color: #38a169; }
+.result-row .wrong { color: #e53e3e; }
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.badge-green { background: #c6f6d5; color: #276749; }
+.badge-orange { background: #fefcbf; color: #975a16; }
+.badge-red { background: #fed7d7; color: #9b2c2c; }
+</style>
+</head>
+<body>
+<div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h1>AMC10 学生答题</h1>
+        <a href="/">← 返回主页</a>
+    </div>
+</div>
+
+<div class="container" id="app">
+    <div class="welcome-card">
+        <h2>欢迎使用 AMC10 作业系统</h2>
+        <p>请输入姓名，选择当天作业开始答题</p>
+        <div class="form-group">
+            <label>选择学生</label>
+            <select id="studentSelect"><option value="">— 请选择你的姓名 —</option></select>
+        </div>
+        <div class="form-group">
+            <label>选择作业</label>
+            <div class="assignment-list" id="assignmentList"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+let allProblems = [];
+let assignments = [];
+let currentAssignment = null;
+let studentName = '';
+let answers = {};
+let submitted = false;
+
+async function init() {
+    const [probRes, assignRes] = await Promise.all([
+        fetch('/api/problems'),
+        fetch('/api/assignments')
+    ]);
+    allProblems = await probRes.json();
+    assignments = await assignRes.json();
+    
+    // Populate student dropdown with all unique students from all assignments
+    populateGlobalStudentDropdown();
+    
+    const params = new URLSearchParams(location.search);
+    const assignId = params.get('assignment');
+    if (assignId) {
+        const a = assignments.find(x => String(x.id) === assignId);
+        if (a) {
+            currentAssignment = a;
+            showAssignmentView();
+            return;
+        }
+    }
+    renderAssignmentList();
+}
+
+function populateGlobalStudentDropdown() {
+    const select = document.getElementById('studentSelect');
+    // Collect all unique student names from all assignments
+    const allStudents = new Set();
+    assignments.forEach(a => {
+        (a.students || []).forEach(s => {
+            if (s.trim()) allStudents.add(s.trim());
+        });
+    });
+    const sorted = Array.from(allStudents).sort();
+    if (sorted.length === 0) {
+        select.innerHTML = '<option value="">— 请选择你的姓名 —</option>';
+        return;
+    }
+    select.innerHTML = '<option value="">— 请选择你的姓名 —</option>' +
+        sorted.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function populateStudentDropdown(assignment) {
+    const select = document.getElementById('studentSelect');
+    const students = (assignment.students || []).filter(Boolean);
+    if (students.length === 0) {
+        select.innerHTML = '<option value="">— 请输入你的姓名 —</option>';
+        // Also show an input field for custom name
+        const container = select.parentElement;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.id = 'studentName';
+        input.placeholder = '输入姓名';
+        input.style.cssText = 'width:100%;padding:12px 16px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:15px;margin-top:8px;';
+        // Only add if not already there
+        if (!container.querySelector('#studentName')) {
+            container.appendChild(input);
+        }
+        return;
+    }
+    select.innerHTML = '<option value="">— 请选择你的姓名 —</option>' +
+        students.map(s => `<option value="${s}">${s}</option>`).join('');
+}
+
+function getStudentName() {
+    const select = document.getElementById('studentSelect');
+    const customInput = document.getElementById('studentName');
+    if (customInput && customInput.value.trim()) {
+        return customInput.value.trim();
+    }
+    return select.value;
+}
+
+function renderAssignmentList() {
+    const list = document.getElementById('assignmentList');
+    if (assignments.length === 0) {
+        list.innerHTML = '<p style="color:#a0aec0;">暂无可用作业</p>';
+        return;
+    }
+    assignments.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    list.innerHTML = assignments.map(a => {
+        const probCount = (a.problems || []).length;
+        const studentCount = (a.students || []).length;
+        const studentNames = studentCount > 0 ? ' · 👥 ' + (a.students || []).join('、') : '';
+        return `
+        <div class="assignment-item" onclick="selectAssignment(${a.id})">
+            <div>
+                <div class="title">${a.title}</div>
+                <div class="meta">📅 ${a.date || ''} · 📝 ${probCount}题${studentNames}${a.note ? ' · ' + a.note : ''}</div>
+            </div>
+            <span style="color:#3182ce;font-weight:600;">开始 →</span>
+        </div>`;
+    }).join('');
+}
+
+function selectAssignment(id) {
+    studentName = getStudentName();
+    if (!studentName) { alert('请先选择或输入你的姓名'); return; }
+    currentAssignment = assignments.find(a => a.id === id);
+    if (!currentAssignment) return;
+    answers = {};
+    submitted = false;
+    populateStudentDropdown(currentAssignment);
+    showAssignmentView();
+}
+
+function showAssignmentView() {
+    const problems = (currentAssignment.problems || []).map(seq => allProblems.find(p => p.seq === seq)).filter(Boolean);
+    const app = document.getElementById('app');
+    
+    app.innerHTML = `
+    <div style="margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h2 style="color:#1a365d;">${currentAssignment.title}</h2>
+            <p style="font-size:14px;color:#718096;">📅 ${currentAssignment.date || ''} · 📝 ${problems.length}题 · 👤 ${studentName}</p>
+        </div>
+        <button class="btn btn-secondary" onclick="location.reload()">换一份作业</button>
+    </div>
+    <div id="problemsContainer"></div>
+    <div class="submit-bar" id="submitBar">
+        <div class="progress-info">已答 <strong id="answeredCount">0</strong> / ${problems.length} 题</div>
+        <button class="btn btn-success" onclick="submitAnswers()">提交作业</button>
+    </div>`;
+    
+    const container = document.getElementById('problemsContainer');
+    container.innerHTML = problems.map((p, idx) => {
+        const diffColor = parseFloat(p.difficulty) >= 0.5 ? 'badge-green' : parseFloat(p.difficulty) >= 0.2 ? 'badge-orange' : 'badge-red';
+        return `
+        <div class="problem-card" data-seq="${p.seq}">
+            <div class="problem-header">
+                <span class="problem-title">第${idx + 1}题 <span class="badge ${diffColor}">${p.difficulty}</span></span>
+                <span class="problem-source">${p.source}</span>
+            </div>
+            <div class="problem-en">${p.q_en}</div>
+            <div class="problem-zh">${p.q_zh}</div>
+            <div class="options" data-seq="${p.seq}">
+                ${p.options.map((opt, oi) => {
+                    const label = String.fromCharCode(65 + oi); // A, B, C, D, E
+                    return `
+                    <label class="option-item" data-seq="${p.seq}" data-answer="${label}" onclick="selectOption(this, ${p.seq}, '${label}')">
+                        <input type="radio" name="q${p.seq}" value="${label}"/>
+                        <span class="label">${label}.</span>
+                        <span>${opt.substring(2).trim()}</span>
+                    </label>`;
+                }).join('')}
+            </div>
+        </div>`;
+    }).join('');
+    
+    // Retypeset MathJax for dynamically added content
+    if (window.MathJax && MathJax.typesetPromise) {
+        MathJax.typesetPromise();
+    }
+}
+
+function selectOption(el, seq, label) {
+    document.querySelectorAll(`.option-item[data-seq="${seq}"]`).forEach(item => {
+        item.classList.remove('selected');
+        item.querySelector('input').checked = false;
+    });
+    el.classList.add('selected');
+    el.querySelector('input').checked = true;
+    answers[String(seq)] = label;
+    
+    const count = Object.keys(answers).length;
+    const elCount = document.getElementById('answeredCount');
+    if (elCount) elCount.textContent = count;
+}
+
+async function submitAnswers() {
+    const problems = currentAssignment.problems || [];
+    const answered = Object.keys(answers).length;
+    if (answered < problems.length) {
+        if (!confirm(`还有 ${problems.length - answered} 题未作答，确定提交吗？`)) return;
+    }
+    
+    const res = await fetch('/api/records', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({
+            assignment_id: currentAssignment.id,
+            student_name: studentName,
+            answers: answers
+        })
+    });
+    const result = await res.json();
+    submitted = true;
+    showResult(result);
+}
+
+function showResult(result) {
+    const app = document.getElementById('app');
+    const results = result.results || [];
+    const correct = result.score || 0;
+    const total = result.total || 0;
+    
+    app.innerHTML = `
+    <div class="result-card">
+        <h2 style="color:#1a365d;margin-bottom:16px;">作业完成！</h2>
+        <div class="result-score">${correct}<span class="result-total">/${total}</span></div>
+        <p style="color:#718096;margin-top:8px;">正确率：${total > 0 ? Math.round(correct / total * 100) : 0}%</p>
+        <div class="result-detail">
+            ${results.map((r, idx) => {
+                const problem = allProblems.find(p => p.seq === r.seq);
+                const source = problem ? problem.source : '';
+                return `
+                <div class="result-row">
+                    <span>第${idx + 1}题 · ${source}</span>
+                    <span class="${r.is_correct ? 'correct' : 'wrong'}">
+                        ${r.is_correct ? '✓ 正确' : `✗ 你的答案: ${r.student_answer || '未答'} | 正确: ${r.correct_answer}`}
+                    </span>
+                </div>`;
+            }).join('')}
+        </div>
+        <div style="margin-top:24px;display:flex;gap:12px;justify-content:center;">
+            <button class="btn btn-secondary" onclick="location.reload()">再做一份</button>
+            <a class="btn btn-primary" href="/">返回主页</a>
+        </div>
+    </div>`;
+    
+    // Also highlight answers on the problem cards
+    if (document.getElementById('problemsContainer')) {
+        results.forEach(r => {
+            document.querySelectorAll(`.option-item[data-seq="${r.seq}"]`).forEach(item => {
+                const ans = item.dataset.answer;
+                if (ans === r.correct_answer) {
+                    item.classList.add('correct');
+                } else if (ans === r.student_answer && !r.is_correct) {
+                    item.classList.add('wrong');
+                }
+            });
+        });
+    }
+}
+
+init();
+</script>
+</body>
+</html>

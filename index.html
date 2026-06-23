@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AMC10 作业管理系统 - 教师主页</title>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: "Microsoft Yahei", "PingFang SC", sans-serif;
+    background: #f0f2f5;
+    color: #1f2937;
+    line-height: 1.7;
+}
+.header {
+    background: linear-gradient(135deg, #1e3a5f, #3182ce);
+    color: #fff;
+    padding: 24px 40px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.header h1 { font-size: 24px; margin-bottom: 4px; }
+.header p { font-size: 14px; opacity: 0.85; }
+.container { max-width: 1100px; margin: 0 auto; padding: 30px 20px; }
+.section { margin-bottom: 36px; }
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e2e8f0;
+}
+.section-header h2 { font-size: 20px; color: #1a365d; }
+.btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-block;
+}
+.btn-primary { background: #3182ce; color: #fff; }
+.btn-primary:hover { background: #2c5aa0; }
+.btn-success { background: #38a169; color: #fff; }
+.btn-success:hover { background: #2f855a; }
+.btn-danger { background: #e53e3e; color: #fff; }
+.btn-danger:hover { background: #c53030; }
+.btn-secondary { background: #e2e8f0; color: #4a5568; }
+.btn-secondary:hover { background: #cbd5e0; }
+.btn-sm { padding: 5px 14px; font-size: 12px; }
+.btn-xs { padding: 3px 10px; font-size: 11px; }
+
+/* --- Student Grid --- */
+.student-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+.student-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 16px 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 4px solid #38a169;
+    transition: box-shadow 0.2s;
+}
+.student-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.student-info { flex: 1; }
+.student-name { font-size: 16px; font-weight: 700; color: #1a365d; }
+.student-tags { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.tag {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+.tag-grade { background: #ebf8ff; color: #2b6cb0; }
+.tag-class { background: #c6f6d5; color: #276749; }
+.tag-region { background: #fefcbf; color: #975a16; }
+.student-actions { display: flex; gap: 6px; }
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #a0aec0;
+}
+.empty-state h3 { font-size: 18px; margin-bottom: 8px; }
+
+/* --- Assignment List --- */
+.assignment-list { display: flex; flex-direction: column; gap: 12px; }
+.assignment-card {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px 24px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: box-shadow 0.2s;
+    border-left: 4px solid #3182ce;
+}
+.assignment-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.assignment-info { flex: 1; }
+.assignment-title { font-size: 18px; font-weight: 700; color: #1a365d; margin-bottom: 4px; }
+.assignment-meta { font-size: 13px; color: #718096; display: flex; gap: 16px; flex-wrap: wrap; }
+.assignment-meta span { display: flex; align-items: center; gap: 4px; }
+.assignment-actions { display: flex; gap: 8px; }
+.badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+}
+.badge-blue { background: #ebf8ff; color: #2b6cb0; }
+.badge-green { background: #c6f6d5; color: #276749; }
+.badge-orange { background: #fefcbf; color: #975a16; }
+.badge-red { background: #fed7d7; color: #9b2c2c; }
+
+/* --- Modal --- */
+.modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 1000;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 40px 20px;
+    overflow-y: auto;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-sm { max-width: 480px; }
+.modal h2 { font-size: 20px; color: #1a365d; margin-bottom: 20px; }
+.form-group { margin-bottom: 16px; }
+.form-group label { display: block; font-size: 14px; font-weight: 600; color: #4a5568; margin-bottom: 6px; }
+.form-group input, .form-group textarea, .form-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s;
+}
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+    outline: none;
+    border-color: #3182ce;
+}
+.form-row {
+    display: flex;
+    gap: 12px;
+}
+.form-row .form-group { flex: 1; }
+.modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
+
+/* --- Student Selector in Assignment Modal --- */
+.student-selector {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+}
+.student-group { margin-bottom: 8px; }
+.student-group:last-child { margin-bottom: 0; }
+.student-group-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 8px;
+    background: #f7fafc;
+    border-radius: 6px;
+    margin-bottom: 4px;
+    font-size: 13px;
+    color: #4a5568;
+}
+.student-group-header .group-title { font-weight: 700; color: #2d3748; }
+.student-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 8px 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 8px;
+    font-size: 14px;
+}
+.student-item:hover { background: #f7fafc; }
+.student-item input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+.student-item .sname { font-weight: 600; color: #1a365d; }
+.btn-link {
+    background: none;
+    border: none;
+    color: #3182ce;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+.btn-link:hover { background: #ebf8ff; }
+
+/* --- Problem Selector (existing) --- */
+.problem-selector {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 8px;
+}
+.problem-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 10px;
+}
+.problem-item:hover { background: #f7fafc; }
+.problem-item.selected { background: #ebf8ff; }
+.problem-item input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; }
+.problem-item .seq { font-weight: 700; color: #3182ce; min-width: 40px; }
+.problem-item .source { font-size: 12px; color: #718096; }
+.problem-item .diff { font-size: 11px; padding: 1px 6px; border-radius: 3px; font-weight: 700; }
+.problem-item .cat { font-size: 11px; padding: 1px 6px; border-radius: 3px; }
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.filter-bar select, .filter-bar input {
+    padding: 6px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 6px;
+    font-size: 13px;
+}
+.selected-count {
+    font-size: 13px;
+    color: #3182ce;
+    font-weight: 600;
+    margin-top: 8px;
+}
+.selected-students-count {
+    font-size: 13px;
+    color: #38a169;
+    font-weight: 600;
+    margin-top: 6px;
+}
+.nav-links { display: flex; gap: 16px; }
+.nav-links a { color: #fff; text-decoration: none; font-size: 14px; opacity: 0.85; transition: opacity 0.2s; }
+.nav-links a:hover { opacity: 1; }
+</style>
+</head>
+<body>
+<div class="header">
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+        <div>
+            <h1>AMC10 作业管理系统</h1>
+            <p>教师管理主页</p>
+        </div>
+        <div class="nav-links">
+            <a href="/">教师主页</a>
+            <a href="/student.html">学生答题</a>
+            <a href="/records.html">答题记录</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+
+    <!-- ============ Section 1: 学生管理 ============ -->
+    <div class="section">
+        <div class="section-header">
+            <h2>👥 学生管理</h2>
+            <button class="btn btn-primary" onclick="openStudentModal()">+ 添加学生</button>
+        </div>
+        <div id="studentList" class="student-grid">
+            <div class="empty-state">
+                <h3>暂无学生</h3>
+                <p>点击"添加学生"录入学生信息</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ Section 2: 作业管理 ============ -->
+    <div class="section">
+        <div class="section-header">
+            <h2>📋 作业列表</h2>
+            <button class="btn btn-primary" onclick="openCreateModal()">+ 新建作业</button>
+        </div>
+        <div id="assignmentList" class="assignment-list">
+            <div class="empty-state">
+                <h3>暂无作业</h3>
+                <p>点击"新建作业"创建第一份作业</p>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ======== Modal: 学生编辑 ======== -->
+<div class="modal-overlay" id="studentModal">
+    <div class="modal modal-sm">
+        <h2 id="studentModalTitle">添加学生</h2>
+        <div class="form-group">
+            <label>姓名 *</label>
+            <input type="text" id="studentName" placeholder="如：张三"/>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label>年级</label>
+                <select id="studentGrade">
+                    <option value="">— 选择年级 —</option>
+                    <option value="7年级">7年级</option>
+                    <option value="8年级">8年级</option>
+                    <option value="9年级">9年级</option>
+                    <option value="10年级">10年级</option>
+                    <option value="11年级">11年级</option>
+                    <option value="12年级">12年级</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>班级</label>
+                <input type="text" id="studentClass" placeholder="如：A班"/>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>地区</label>
+            <select id="studentRegion">
+                <option value="">— 选择地区 —</option>
+                <option value="中国">中国</option>
+                <option value="美国">美国</option>
+                <option value="加拿大">加拿大</option>
+                <option value="英国">英国</option>
+                <option value="澳大利亚">澳大利亚</option>
+                <option value="其他">其他</option>
+            </select>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeStudentModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveStudent()">保存</button>
+        </div>
+    </div>
+</div>
+
+<!-- ======== Modal: 作业编辑 ======== -->
+<div class="modal-overlay" id="createModal">
+    <div class="modal">
+        <h2 id="modalTitle">新建作业</h2>
+        <div class="form-group">
+            <label>作业标题</label>
+            <input type="text" id="assignTitle" placeholder="如：2026-06-23 作业"/>
+        </div>
+        <div class="form-row">
+            <div class="form-group" style="flex:1;">
+                <label>日期</label>
+                <input type="date" id="assignDate"/>
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>备注（可选）</label>
+                <input type="text" id="assignNote" placeholder="如：本周重点练习"/>
+            </div>
+        </div>
+
+        <!-- Student Picker -->
+        <div class="form-group">
+            <label>选择学生（在下方点选）</label>
+            <div class="student-selector" id="studentSelector">
+                <p style="color:#a0aec0;font-size:13px;text-align:center;padding:20px;">加载中...</p>
+            </div>
+            <div class="selected-students-count" id="selectedStudentCount">已选 0 人</div>
+        </div>
+
+        <!-- Problem Picker (existing) -->
+        <div class="form-group">
+            <label>选择题目（共600题）</label>
+            <div class="filter-bar">
+                <select id="filterCat">
+                    <option value="">全部类型</option>
+                    <option value="代数">代数</option>
+                    <option value="几何">几何</option>
+                    <option value="数论">数论</option>
+                    <option value="组合">组合</option>
+                    <option value="综合">综合</option>
+                </select>
+                <select id="filterTier">
+                    <option value="">全部难度</option>
+                    <option value="simple">简单</option>
+                    <option value="medium">中等</option>
+                    <option value="hard">困难</option>
+                </select>
+                <input type="number" id="filterSeq" placeholder="题号" style="width:80px;"/>
+                <button class="btn btn-secondary btn-sm" onclick="filterProblems()">筛选</button>
+                <button class="btn btn-secondary btn-sm" onclick="selectAllFiltered()">全选筛选结果</button>
+                <button class="btn btn-secondary btn-sm" onclick="clearSelection()">清空选择</button>
+            </div>
+            <div class="selected-count" id="selectedCount">已选 0 题</div>
+            <div class="problem-selector" id="problemSelector"></div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+            <button class="btn btn-primary" onclick="saveAssignment()">保存</button>
+        </div>
+    </div>
+</div>
+
+<script>
+// ====== Data ======
+let allProblems = [];
+let assignments = [];
+let allStudents = [];
+let selectedProblems = new Set();
+let selectedStudents = new Set();
+let editingId = null;
+let editingStudentName = null;
+
+// ====== Initial Load ======
+async function loadData() {
+    const [probRes, assignRes, stuRes] = await Promise.all([
+        fetch('/api/problems'),
+        fetch('/api/assignments'),
+        fetch('/api/students')
+    ]);
+    allProblems = await probRes.json();
+    assignments = await assignRes.json();
+    allStudents = await stuRes.json();
+    renderStudents();
+    renderAssignments();
+}
+
+// =====================================================================
+//  STUDENT MANAGEMENT
+// =====================================================================
+
+function renderStudents() {
+    const list = document.getElementById('studentList');
+    if (allStudents.length === 0) {
+        list.innerHTML = '<div class="empty-state"><h3>暂无学生</h3><p>点击"添加学生"录入学生信息，布置作业时可点选学生</p></div>';
+        return;
+    }
+    list.innerHTML = allStudents.map(s => {
+        const gradeTag = s.grade ? `<span class="tag tag-grade">${s.grade}</span>` : '';
+        const classTag = s.class ? `<span class="tag tag-class">${s.class}</span>` : '';
+        const regionTag = s.region ? `<span class="tag tag-region">${s.region}</span>` : '';
+        return `
+        <div class="student-card">
+            <div class="student-info">
+                <div class="student-name">${s.name}</div>
+                <div class="student-tags">
+                    ${gradeTag}${classTag}${regionTag}
+                    ${!s.grade && !s.class && !s.region ? '<span style="font-size:11px;color:#a0aec0;">未分类</span>' : ''}
+                </div>
+            </div>
+            <div class="student-actions">
+                <button class="btn btn-secondary btn-xs" onclick="editStudent('${s.name}')">编辑</button>
+                <button class="btn btn-danger btn-xs" onclick="deleteStudent('${s.name}')">删除</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openStudentModal() {
+    editingStudentName = null;
+    document.getElementById('studentModalTitle').textContent = '添加学生';
+    document.getElementById('studentName').value = '';
+    document.getElementById('studentGrade').value = '';
+    document.getElementById('studentClass').value = '';
+    document.getElementById('studentRegion').value = '';
+    document.getElementById('studentModal').classList.add('show');
+}
+
+function closeStudentModal() {
+    document.getElementById('studentModal').classList.remove('show');
+}
+
+function editStudent(name) {
+    const s = allStudents.find(x => x.name === name);
+    if (!s) return;
+    editingStudentName = name;
+    document.getElementById('studentModalTitle').textContent = '编辑学生';
+    document.getElementById('studentName').value = s.name;
+    document.getElementById('studentGrade').value = s.grade || '';
+    document.getElementById('studentClass').value = s.class || '';
+    document.getElementById('studentRegion').value = s.region || '';
+    document.getElementById('studentModal').classList.add('show');
+}
+
+async function deleteStudent(name) {
+    if (!confirm(`确定删除学生"${name}"？`)) return;
+    await fetch('/api/students/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({name: name})
+    });
+    await loadData();
+}
+
+async function saveStudent() {
+    const name = document.getElementById('studentName').value.trim();
+    if (!name) { alert('请输入学生姓名'); return; }
+    const data = {
+        name: name,
+        grade: document.getElementById('studentGrade').value,
+        class: document.getElementById('studentClass').value.trim(),
+        region: document.getElementById('studentRegion').value
+    };
+    await fetch('/api/students', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    closeStudentModal();
+    await loadData();
+}
+
+// =====================================================================
+//  ASSIGNMENT MANAGEMENT
+// =====================================================================
+
+function renderAssignments() {
+    const list = document.getElementById('assignmentList');
+    if (assignments.length === 0) {
+        list.innerHTML = '<div class="empty-state"><h3>暂无作业</h3><p>点击"新建作业"创建第一份作业</p></div>';
+        return;
+    }
+    assignments.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    
+    list.innerHTML = assignments.map((a, idx) => {
+        const probCount = (a.problems || []).length;
+        const studentCount = (a.students || []).length;
+        return `
+        <div class="assignment-card">
+            <div class="assignment-info">
+                <div class="assignment-title">${a.title || '未命名作业'}</div>
+                <div class="assignment-meta">
+                    <span>📅 ${a.date || '未设置日期'}</span>
+                    <span>📝 ${probCount} 题</span>
+                    ${studentCount > 0 ? `<span>👥 ${studentCount} 人</span>` : ''}
+                    ${a.note ? `<span>💬 ${a.note}</span>` : ''}
+                </div>
+                ${studentCount > 0 ? `<div style="font-size:12px;color:#718096;margin-top:4px;">👤 ${(a.students || []).join('、')}</div>` : ''}
+            </div>
+            <div class="assignment-actions">
+                <a class="btn btn-success btn-sm" href="/student.html?assignment=${a.id}">学生答题</a>
+                <a class="btn btn-secondary btn-sm" href="/records.html?assignment=${a.id}">查看记录</a>
+                <button class="btn btn-secondary btn-sm" onclick="editAssignment(${a.id})">编辑</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteAssignment(${a.id})">删除</button>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function openCreateModal() {
+    editingId = null;
+    selectedProblems.clear();
+    selectedStudents.clear();
+    const today = new Date().toISOString().slice(0, 10);
+    document.getElementById('modalTitle').textContent = '新建作业';
+    // Auto-fill title with today's date
+    document.getElementById('assignTitle').value = today + ' 作业';
+    document.getElementById('assignDate').value = today;
+    document.getElementById('assignNote').value = '';
+    renderProblemSelector();
+    renderStudentSelector();
+    document.getElementById('createModal').classList.add('show');
+}
+
+function closeModal() {
+    document.getElementById('createModal').classList.remove('show');
+}
+
+async function editAssignment(id) {
+    const a = assignments.find(x => x.id === id);
+    if (!a) return;
+    editingId = id;
+    selectedProblems = new Set((a.problems || []).map(String));
+    selectedStudents = new Set((a.students || []));
+    document.getElementById('modalTitle').textContent = '编辑作业';
+    document.getElementById('assignTitle').value = a.title || '';
+    document.getElementById('assignDate').value = a.date || '';
+    document.getElementById('assignNote').value = a.note || '';
+    renderProblemSelector();
+    renderStudentSelector();
+    document.getElementById('createModal').classList.add('show');
+}
+
+async function deleteAssignment(id) {
+    if (!confirm('确定删除此作业？')) return;
+    await fetch('/api/assignments/delete', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({id: id})
+    });
+    await loadData();
+}
+
+// =====================================================================
+//  STUDENT SELECTOR (in assignment modal)
+// =====================================================================
+
+function renderStudentSelector() {
+    const container = document.getElementById('studentSelector');
+    if (allStudents.length === 0) {
+        container.innerHTML = '<p style="color:#a0aec0;font-size:13px;text-align:center;padding:20px;">请先在"学生管理"中添加学生</p>';
+        updateSelectedStudentCount();
+        return;
+    }
+    
+    // Group students by grade → class
+    const groups = {};
+    allStudents.forEach(s => {
+        const gradeKey = s.grade || '未分组';
+        const classKey = s.class || '';
+        const groupKey = gradeKey + '||' + classKey;
+        if (!groups[groupKey]) {
+            groups[groupKey] = { grade: gradeKey, cls: classKey, students: [] };
+        }
+        groups[groupKey].students.push(s);
+    });
+    
+    // Sort groups by grade, then class
+    const sortedGroups = Object.values(groups).sort((a, b) => {
+        if (a.grade !== b.grade) return a.grade.localeCompare(b.grade);
+        return a.cls.localeCompare(b.cls);
+    });
+    
+    let html = '';
+    sortedGroups.forEach(g => {
+        const displayName = g.cls ? g.grade + ' · ' + g.cls : g.grade;
+        const allInGroupSelected = g.students.every(s => selectedStudents.has(s.name));
+        html += `
+        <div class="student-group">
+            <div class="student-group-header">
+                <span class="group-title">${displayName}</span>
+                <button class="btn-link" onclick="toggleStudentGroup('${g.grade.replace(/'/g,"\\'")}', '${g.cls.replace(/'/g,"\\'")}')">${allInGroupSelected ? '取消全选' : '全选'}</button>
+            </div>`;
+        g.students.forEach(s => {
+            const checked = selectedStudents.has(s.name) ? 'checked' : '';
+            const regionTag = s.region ? `<span class="tag tag-region" style="font-size:10px;padding:1px 6px;">${s.region}</span>` : '';
+            html += `
+            <label class="student-item ${checked ? 'selected' : ''}">
+                <input type="checkbox" ${checked} onchange="toggleStudent('${s.name}')"/>
+                <span class="sname">${s.name}</span>
+                ${regionTag}
+            </label>`;
+        });
+        html += '</div>';
+    });
+    
+    container.innerHTML = html;
+    updateSelectedStudentCount();
+}
+
+function toggleStudent(name) {
+    if (selectedStudents.has(name)) selectedStudents.delete(name);
+    else selectedStudents.add(name);
+    renderStudentSelector();
+}
+
+function toggleStudentGroup(grade, cls) {
+    const groupStudents = allStudents.filter(s => {
+        return (s.grade || '未分组') === grade && (s.class || '') === cls;
+    });
+    const allSelected = groupStudents.every(s => selectedStudents.has(s.name));
+    if (allSelected) {
+        groupStudents.forEach(s => selectedStudents.delete(s.name));
+    } else {
+        groupStudents.forEach(s => selectedStudents.add(s.name));
+    }
+    renderStudentSelector();
+}
+
+function updateSelectedStudentCount() {
+    document.getElementById('selectedStudentCount').textContent = `已选 ${selectedStudents.size} 人`;
+}
+
+// =====================================================================
+//  PROBLEM SELECTOR (existing)
+// =====================================================================
+
+function renderProblemSelector() {
+    const container = document.getElementById('problemSelector');
+    const filterCat = document.getElementById('filterCat').value;
+    const filterTier = document.getElementById('filterTier').value;
+    const filterSeq = document.getElementById('filterSeq').value;
+    
+    let filtered = allProblems;
+    if (filterCat) filtered = filtered.filter(p => p.category === filterCat);
+    if (filterTier) filtered = filtered.filter(p => p.tier === filterTier);
+    if (filterSeq) filtered = filtered.filter(p => p.seq === parseInt(filterSeq));
+    
+    container.innerHTML = filtered.map(p => {
+        const isSelected = selectedProblems.has(String(p.seq));
+        const diffColor = parseFloat(p.difficulty) >= 0.5 ? '#c6f6d5' : parseFloat(p.difficulty) >= 0.2 ? '#fefcbf' : '#fed7d7';
+        const diffTextColor = parseFloat(p.difficulty) >= 0.5 ? '#276749' : parseFloat(p.difficulty) >= 0.2 ? '#975a16' : '#9b2c2c';
+        const catColors = {'代数':'#ebf8ff,#2b6cb0','几何':'#c6f6d5,#276749','数论':'#fefcbf,#975a16','组合':'#fed7d7,#9b2c2c','综合':'#e2e8f0,#4a5568'};
+        const [catBg, catColor] = (catColors[p.category] || '#e2e8f0,#4a5568').split(',');
+        return `
+        <div class="problem-item ${isSelected ? 'selected' : ''}" onclick="toggleProblem(${p.seq})">
+            <input type="checkbox" ${isSelected ? 'checked' : ''} onclick="event.stopPropagation(); toggleProblem(${p.seq})"/>
+            <span class="seq">#${p.seq}</span>
+            <span class="diff" style="background:${diffColor};color:${diffTextColor};">${p.difficulty}</span>
+            <span class="cat" style="background:${catBg};color:${catColor};">${p.category}</span>
+            <span class="source">${p.source}</span>
+        </div>`;
+    }).join('');
+    updateSelectedCount();
+}
+
+function toggleProblem(seq) {
+    const key = String(seq);
+    if (selectedProblems.has(key)) selectedProblems.delete(key);
+    else selectedProblems.add(key);
+    renderProblemSelector();
+}
+
+function filterProblems() { renderProblemSelector(); }
+
+function selectAllFiltered() {
+    const filterCat = document.getElementById('filterCat').value;
+    const filterTier = document.getElementById('filterTier').value;
+    const filterSeq = document.getElementById('filterSeq').value;
+    let filtered = allProblems;
+    if (filterCat) filtered = filtered.filter(p => p.category === filterCat);
+    if (filterTier) filtered = filtered.filter(p => p.tier === filterTier);
+    if (filterSeq) filtered = filtered.filter(p => p.seq === parseInt(filterSeq));
+    filtered.forEach(p => selectedProblems.add(String(p.seq)));
+    renderProblemSelector();
+}
+
+function clearSelection() {
+    selectedProblems.clear();
+    renderProblemSelector();
+}
+
+function updateSelectedCount() {
+    document.getElementById('selectedCount').textContent = `已选 ${selectedProblems.size} 题`;
+}
+
+// =====================================================================
+//  SAVE ASSIGNMENT
+// =====================================================================
+
+async function saveAssignment() {
+    const title = document.getElementById('assignTitle').value.trim();
+    const date = document.getElementById('assignDate').value;
+    const note = document.getElementById('assignNote').value.trim();
+    const problems = Array.from(selectedProblems).map(Number).sort((a, b) => a - b);
+    const studentNames = Array.from(selectedStudents).sort();
+    
+    if (!title) { alert('请输入作业标题'); return; }
+    if (problems.length === 0) { alert('请至少选择一道题目'); return; }
+    
+    const data = { title, date, note, students: studentNames, problems };
+    
+    if (editingId) {
+        data.id = editingId;
+    }
+    await fetch('/api/assignments', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    });
+    closeModal();
+    await loadData();
+}
+
+// ====== Start ======
+loadData();
+</script>
+</body>
+</html>
